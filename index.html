@@ -77,23 +77,17 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getDatabase, ref, onValue, push, set, remove, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-        
-const firebaseConfig = {
-  apiKey: "AIzaSyBu64A77sT50ws_3EPnDmh-cSCEauIpKU4",
-  authDomain: "obdbulusma.firebaseapp.com",
-  databaseURL: "https://obdbulusma-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "obdbulusma",
-  storageBucket: "obdbulusma.firebasestorage.app",
-  messagingSenderId: "552560457154",
-  appId: "1:552560457154:web:a1b34f458dc055bbc2525b",
-  measurementId: "G-JPCY4TL8G1"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+        // SENİN API BİLGİLERİN (Düzeltildi)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBu64A77sT50ws_3EPnDmh-cSCEauIpKU4",
+            authDomain: "obdbulusma.firebaseapp.com",
+            databaseURL: "https://obdbulusma-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "obdbulusma",
+            storageBucket: "obdbulusma.firebasestorage.app",
+            messagingSenderId: "552560457154",
+            appId: "1:552560457154:web:a1b34f458dc055bbc2525b",
+            measurementId: "G-JPCY4TL8G1"
         };
-        // --------------------------------------------------------------------------
 
         // Firebase Başlatma
         const app = initializeApp(firebaseConfig);
@@ -106,7 +100,7 @@ const analytics = getAnalytics(app);
         let placesData = {};
         let selectedTimeSlot = "20-23";
 
-        // Global Fonksiyonları Window'a bağla (Module olduğu için)
+        // Global Fonksiyonları Window'a bağla
         window.uiSelectTime = (slot) => {
             selectedTimeSlot = slot;
             ['17-20', '20-23', '23-03'].forEach(t => {
@@ -169,7 +163,7 @@ const analytics = getAnalytics(app);
                 count++;
                 if(count > 15) {
                     clearInterval(interval);
-                    // Basit rastgele (geliştirilebilir)
+                    // Basit rastgele
                     resText.innerText = list[Math.floor(Math.random()*list.length)].name;
                 }
             }, 100);
@@ -178,7 +172,7 @@ const analytics = getAnalytics(app);
         // Verileri Çek ve Dinle (Realtime Listener)
         onValue(dbRef, (snapshot) => {
             const data = snapshot.val();
-            placesData = data || {}; // Veri yoksa boş obje
+            placesData = data || {}; 
             renderPlaces();
         });
 
@@ -207,12 +201,10 @@ const analytics = getAnalytics(app);
                 return;
             }
 
-            // Firebase objesini diziye çevirip işle
             const placesArray = Object.keys(placesData).map(key => {
                 return { id: key, ...placesData[key] };
             });
 
-            // Sıralama
             const sorted = placesArray.map(p => {
                 let total = 0, count = 0;
                 selectedFriends.forEach(f => {
@@ -228,7 +220,6 @@ const analytics = getAnalytics(app);
                 
                 let ratingsHTML = '';
                 friends.forEach(f => {
-                    // Eğer kişi seçili değilse inputu gizle veya soluklaştır (burada gizlemiyoruz, hepsi görünsün)
                     const score = place.ratings ? (place.ratings[f] || '') : '';
                     let color = "text-gray-400";
                     if(score >= 4) color = "text-green-400";
@@ -260,7 +251,6 @@ const analytics = getAnalytics(app);
             });
         }
 
-        // Başlangıç
         window.uiSelectTime(selectedTimeSlot);
         renderFriendSelector();
     </script>
