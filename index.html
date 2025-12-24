@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buluşma Planlayıcı v2</title>
+    <title>OBD Buluşma (Online)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -12,155 +12,119 @@
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         .active-time { background-color: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
         .inactive-time { background-color: transparent; border: 1px solid #475569; color: #94a3b8; }
-        
-        /* Özelleştirilmiş Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
 <body class="min-h-screen p-4 flex flex-col items-center">
 
     <div class="text-center mb-6">
-        <h1 class="text-2xl font-bold text-blue-400 tracking-wider">EKİP BULUŞMASI</h1>
-        <p class="text-xs text-gray-500 mt-1">Oğuzhan • Berkay • Duran</p>
+        <h1 class="text-2xl font-bold text-blue-400 tracking-wider">OBD BULUŞMA</h1>
+        <p class="text-xs text-green-400 mt-1">● Canlı Senkronize</p>
     </div>
 
     <div class="w-full max-w-md mb-6">
-        <p class="text-xs text-gray-400 mb-2 ml-1">Zaman Aralığı Seç:</p>
         <div class="flex gap-2 text-xs font-bold">
-            <button onclick="selectTime('17-20')" id="time-17-20" class="flex-1 py-3 rounded-lg border transition inactive-time">
-                17.00 - 20.00<br><span class="font-normal text-[10px]">Akşamüstü</span>
-            </button>
-            <button onclick="selectTime('20-23')" id="time-20-23" class="flex-1 py-3 rounded-lg border transition inactive-time">
-                20.00 - 23.00<br><span class="font-normal text-[10px]">Prime Time</span>
-            </button>
-            <button onclick="selectTime('23-03')" id="time-23-03" class="flex-1 py-3 rounded-lg border transition inactive-time">
-                23.00 - 03.00<br><span class="font-normal text-[10px]">Gece</span>
-            </button>
+            <button onclick="uiSelectTime('17-20')" id="time-17-20" class="flex-1 py-3 rounded-lg border transition inactive-time">17.00 - 20.00</button>
+            <button onclick="uiSelectTime('20-23')" id="time-20-23" class="flex-1 py-3 rounded-lg border transition inactive-time">20.00 - 23.00</button>
+            <button onclick="uiSelectTime('23-03')" id="time-23-03" class="flex-1 py-3 rounded-lg border transition inactive-time">23.00 - 03.00</button>
         </div>
     </div>
 
     <div class="w-full max-w-md glass p-4 rounded-xl mb-6 shadow-lg">
         <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-700">
-            <h2 class="text-sm font-semibold text-gray-300">Kimler Geldi?</h2>
-            <span class="text-xs text-gray-500" id="participant-count">0 kişi</span>
+            <h2 class="text-sm font-semibold text-gray-300">Puanlayanlar</h2>
+            <span class="text-xs text-gray-500" id="participant-count">3 kişi</span>
         </div>
-        <div class="flex justify-between gap-3" id="friend-selector">
-            </div>
+        <div class="flex justify-between gap-3" id="friend-selector"></div>
     </div>
 
     <div class="w-full max-w-md flex gap-3 mb-6">
-        <button onclick="pickRandomPlace()" class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 py-3 rounded-xl font-bold shadow-lg hover:shadow-blue-500/30 transition text-white">
-            <i class="fas fa-random mr-2"></i>Rastgele Seç
+        <button onclick="pickRandomPlace()" class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 py-3 rounded-xl font-bold shadow-lg text-white">
+            <i class="fas fa-random mr-2"></i>Rastgele
         </button>
-        <button onclick="toggleAddModal()" class="flex-1 bg-gray-800 hover:bg-gray-700 py-3 rounded-xl font-bold transition border border-gray-700 text-gray-300">
-            <i class="fas fa-plus mr-2"></i>Mekan Ekle
+        <button onclick="toggleAddModal()" class="flex-1 bg-gray-800 hover:bg-gray-700 py-3 rounded-xl font-bold border border-gray-700 text-gray-300">
+            <i class="fas fa-plus mr-2"></i>Ekle
         </button>
     </div>
 
-    <div id="result-area" class="hidden w-full max-w-md bg-indigo-900/50 p-6 rounded-xl mb-6 text-center border border-indigo-500/50 relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-full h-1 bg-indigo-500 animate-pulse"></div>
-        <h3 class="text-sm text-indigo-200 uppercase tracking-widest mb-2">Rota Oluşturuldu</h3>
+    <div id="result-area" class="hidden w-full max-w-md bg-indigo-900/50 p-6 rounded-xl mb-6 text-center border border-indigo-500/50">
         <h1 class="text-3xl font-bold text-white mt-1" id="winner-text">...</h1>
-        <p class="text-xs text-gray-400 mt-2" id="winner-subtext"></p>
     </div>
 
     <div class="w-full max-w-md pb-20">
-        <div class="flex justify-between items-end mb-4">
-            <h2 class="text-lg font-semibold text-gray-200">Mekanlar & Puanlar (1-5)</h2>
-            <button onclick="clearData()" class="text-xs text-red-500 hover:text-red-400">Verileri Sıfırla</button>
-        </div>
         <div id="places-list" class="space-y-3">
-            </div>
+            <div class="text-center text-gray-500 text-sm mt-10">Veriler yükleniyor...</div>
+        </div>
     </div>
 
     <div id="add-modal" class="fixed inset-0 bg-black/90 hidden flex justify-center items-center z-50 backdrop-blur-sm">
         <div class="bg-slate-900 p-6 rounded-2xl w-11/12 max-w-sm border border-slate-700 shadow-2xl">
-            <h2 class="text-xl font-bold mb-1 text-white">Yeni Mekan</h2>
-            <p class="text-xs text-gray-400 mb-4">Listeye yeni bir yer ekle</p>
-            
-            <label class="text-xs text-gray-500 ml-1">Mekan Adı</label>
-            <input type="text" id="new-place-name" class="w-full p-3 rounded-lg bg-slate-800 text-white mb-3 border border-slate-700 focus:border-blue-500 outline-none">
-            
-            <label class="text-xs text-gray-500 ml-1">Kategori</label>
-            <select id="new-place-type" class="w-full p-3 rounded-lg bg-slate-800 text-white mb-6 border border-slate-700 outline-none appearance-none">
+            <h2 class="text-xl font-bold mb-4 text-white">Yeni Mekan</h2>
+            <input type="text" id="new-place-name" placeholder="Mekan Adı" class="w-full p-3 rounded-lg bg-slate-800 text-white mb-3 border border-slate-700">
+            <select id="new-place-type" class="w-full p-3 rounded-lg bg-slate-800 text-white mb-6 border border-slate-700">
                 <option value="Kahve">☕ Kahve</option>
                 <option value="Tatlı">🍰 Tatlı</option>
                 <option value="Aktivite">🎳 Aktivite</option>
             </select>
-            
             <div class="flex justify-end gap-3">
-                <button onclick="toggleAddModal()" class="px-5 py-2 rounded-lg text-gray-400 hover:text-white transition">İptal</button>
-                <button onclick="savePlace()" class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg shadow-blue-900/20">Kaydet</button>
+                <button onclick="toggleAddModal()" class="px-5 py-2 rounded-lg text-gray-400">İptal</button>
+                <button onclick="handleAddPlace()" class="px-5 py-2 rounded-lg bg-blue-600 text-white">Kaydet</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // 1. Yapılandırma
+    <script type="module">
+        // Firebase Kütüphaneleri
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push, set, remove, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+        // --- BURAYI DÜZENLE: Firebase'den aldığın config kodunu buraya yapıştır ---
+        const firebaseConfig = {
+            a// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBu64A77sT50ws_3EPnDmh-cSCEauIpKU4",
+  authDomain: "obdbulusma.firebaseapp.com",
+  databaseURL: "https://obdbulusma-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "obdbulusma",
+  storageBucket: "obdbulusma.firebasestorage.app",
+  messagingSenderId: "552560457154",
+  appId: "1:552560457154:web:a1b34f458dc055bbc2525b",
+  measurementId: "G-JPCY4TL8G1"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+        };
+        // --------------------------------------------------------------------------
+
+        // Firebase Başlatma
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const dbRef = ref(db, 'places');
+
+        // Değişkenler
         const friends = ["Oğuzhan", "Berkay", "Duran"];
-        let selectedTimeSlot = "20-23"; // Varsayılan saat
-        
-        // Veri Çekme (Local Storage Key değişti: v2)
-        let places = JSON.parse(localStorage.getItem('bulusma_app_v2')) || [
-            { id: 1, name: "Espresso Lab", type: "Kahve", ratings: { "Oğuzhan": 4, "Berkay": 3, "Duran": 5 } },
-            { id: 2, name: "Viyana Kahvesi", type: "Tatlı", ratings: { "Oğuzhan": 5, "Berkay": 5, "Duran": 2 } },
-            { id: 3, name: "Bowling Salonu", type: "Aktivite", ratings: { "Oğuzhan": 3, "Berkay": 4, "Duran": 4 } }
-        ];
-
         let selectedFriends = [...friends];
+        let placesData = {};
+        let selectedTimeSlot = "20-23";
 
-        // Başlangıç
-        window.onload = () => {
-            renderFriendSelector();
-            renderPlaces();
-            selectTime(selectedTimeSlot); // Görseli güncelle
+        // Global Fonksiyonları Window'a bağla (Module olduğu için)
+        window.uiSelectTime = (slot) => {
+            selectedTimeSlot = slot;
+            ['17-20', '20-23', '23-03'].forEach(t => {
+                document.getElementById(`time-${t}`).className = "flex-1 py-3 rounded-lg border transition inactive-time";
+            });
+            document.getElementById(`time-${slot}`).className = "flex-1 py-3 rounded-lg border transition active-time";
         };
 
-        // Zaman Seçimi Görselleştirme
-        function selectTime(slot) {
-            selectedTimeSlot = slot;
-            // Hepsini resetle
-            ['17-20', '20-23', '23-03'].forEach(t => {
-                const el = document.getElementById(`time-${t}`);
-                el.classList.remove('active-time');
-                el.classList.add('inactive-time');
-            });
-            // Seçileni boya
-            const active = document.getElementById(`time-${slot}`);
-            active.classList.remove('inactive-time');
-            active.classList.add('active-time');
-        }
-
-        // Arkadaş Seçici
-        function renderFriendSelector() {
-            const container = document.getElementById('friend-selector');
-            container.innerHTML = '';
-            document.getElementById('participant-count').innerText = `${selectedFriends.length} kişi`;
-
-            friends.forEach(friend => {
-                const isSelected = selectedFriends.includes(friend);
-                const btn = document.createElement('div');
-                // İlk harfi alıp avatar gibi gösterme
-                const initial = friend.charAt(0);
-                
-                btn.className = `cursor-pointer flex-1 flex flex-col items-center justify-center py-2 rounded-xl border transition select-none ${isSelected ? 'bg-slate-700 border-blue-500 text-blue-400' : 'bg-transparent border-slate-700 text-gray-600 opacity-50'}`;
-                
-                btn.innerHTML = `
-                    <div class="w-8 h-8 mb-1 rounded-full flex items-center justify-center font-bold text-sm ${isSelected ? 'bg-blue-500 text-white' : 'bg-slate-800'}">
-                        ${initial}
-                    </div>
-                    <span class="text-xs font-medium">${friend}</span>
-                `;
-                
-                btn.onclick = () => toggleFriend(friend);
-                container.appendChild(btn);
-            });
-        }
-
-        function toggleFriend(name) {
+        window.toggleFriend = (name) => {
             if (selectedFriends.includes(name)) {
                 if(selectedFriends.length > 1) selectedFriends = selectedFriends.filter(f => f !== name);
             } else {
@@ -168,183 +132,146 @@
             }
             renderFriendSelector();
             renderPlaces();
+        };
+
+        window.toggleAddModal = () => document.getElementById('add-modal').classList.toggle('hidden');
+
+        window.handleAddPlace = () => {
+            const name = document.getElementById('new-place-name').value;
+            const type = document.getElementById('new-place-type').value;
+            if(!name) return alert("İsim giriniz");
+            
+            // Firebase'e Kaydet
+            const newRef = push(dbRef);
+            set(newRef, {
+                name: name,
+                type: type,
+                ratings: { "Oğuzhan": 0, "Berkay": 0, "Duran": 0 }
+            });
+            
+            document.getElementById('new-place-name').value = '';
+            window.toggleAddModal();
+        };
+
+        window.handleRate = (id, friend, val) => {
+            if(val > 5) val = 5; if(val < 0) val = 0;
+            // Firebase Güncelle
+            update(ref(db, `places/${id}/ratings`), {
+                [friend]: parseInt(val)
+            });
+        };
+
+        window.handleDelete = (id) => {
+            if(confirm("Siliniyor?")) remove(ref(db, `places/${id}`));
+        };
+
+        window.pickRandomPlace = () => {
+            const list = Object.values(placesData);
+            if(list.length === 0) return;
+            const resArea = document.getElementById('result-area');
+            const resText = document.getElementById('winner-text');
+            resArea.classList.remove('hidden');
+            
+            let count = 0;
+            const interval = setInterval(() => {
+                resText.innerText = list[Math.floor(Math.random()*list.length)].name;
+                count++;
+                if(count > 15) {
+                    clearInterval(interval);
+                    // Basit rastgele (geliştirilebilir)
+                    resText.innerText = list[Math.floor(Math.random()*list.length)].name;
+                }
+            }, 100);
+        };
+
+        // Verileri Çek ve Dinle (Realtime Listener)
+        onValue(dbRef, (snapshot) => {
+            const data = snapshot.val();
+            placesData = data || {}; // Veri yoksa boş obje
+            renderPlaces();
+        });
+
+        // Arayüz Çizimi
+        function renderFriendSelector() {
+            const container = document.getElementById('friend-selector');
+            container.innerHTML = '';
+            document.getElementById('participant-count').innerText = `${selectedFriends.length} kişi`;
+            friends.forEach(friend => {
+                const isSelected = selectedFriends.includes(friend);
+                const btn = document.createElement('div');
+                const initial = friend.charAt(0);
+                btn.className = `cursor-pointer flex-1 flex flex-col items-center justify-center py-2 rounded-xl border transition select-none ${isSelected ? 'bg-slate-700 border-blue-500 text-blue-400' : 'bg-transparent border-slate-700 text-gray-600 opacity-50'}`;
+                btn.innerHTML = `<div class="w-8 h-8 mb-1 rounded-full flex items-center justify-center font-bold text-sm ${isSelected ? 'bg-blue-500 text-white' : 'bg-slate-800'}">${initial}</div><span class="text-xs font-medium">${friend}</span>`;
+                btn.onclick = () => window.toggleFriend(friend);
+                container.appendChild(btn);
+            });
         }
 
-        // Mekan Listesi
         function renderPlaces() {
             const list = document.getElementById('places-list');
             list.innerHTML = '';
+            
+            if(Object.keys(placesData).length === 0) {
+                list.innerHTML = '<div class="text-center text-gray-500 mt-4">Henüz mekan eklenmemiş.</div>';
+                return;
+            }
 
-            // Sıralama Mantığı
-            const sortedPlaces = places.map(place => {
-                let totalScore = 0;
-                let count = 0;
-                selectedFriends.forEach(friend => {
-                    if (place.ratings[friend]) {
-                        totalScore += parseInt(place.ratings[friend]);
-                        count++;
-                    }
+            // Firebase objesini diziye çevirip işle
+            const placesArray = Object.keys(placesData).map(key => {
+                return { id: key, ...placesData[key] };
+            });
+
+            // Sıralama
+            const sorted = placesArray.map(p => {
+                let total = 0, count = 0;
+                selectedFriends.forEach(f => {
+                    const score = p.ratings ? (p.ratings[f] || 0) : 0;
+                    if(score > 0) { total += score; count++; }
                 });
-                const avg = count > 0 ? (totalScore / count).toFixed(1) : 0;
-                return { ...place, currentAvg: avg };
-            }).sort((a, b) => b.currentAvg - a.currentAvg);
+                return { ...p, avg: count > 0 ? (total/count).toFixed(1) : 0 };
+            }).sort((a,b) => b.avg - a.avg);
 
-            sortedPlaces.forEach(place => {
+            sorted.forEach(place => {
                 const card = document.createElement('div');
-                card.className = "glass p-4 rounded-xl relative overflow-hidden group";
+                card.className = "glass p-4 rounded-xl relative group";
                 
-                // Kategoriye göre ikon/renk belirleme
-                let typeIcon = "fa-coffee";
-                let typeColor = "text-orange-300";
-                if(place.type === "Tatlı") { typeIcon = "fa-cheese"; typeColor = "text-pink-300"; }
-                if(place.type === "Aktivite") { typeIcon = "fa-gamepad"; typeColor = "text-green-300"; }
-
                 let ratingsHTML = '';
-                selectedFriends.forEach(friend => {
-                    const score = place.ratings[friend] || '';
-                    // 5 üzerinden renklendirme (yeşil yüksek, kırmızı düşük)
-                    let scoreColor = "text-gray-400";
-                    if(score >= 4) scoreColor = "text-green-400";
-                    else if(score <= 2 && score !== '') scoreColor = "text-red-400";
-
+                friends.forEach(f => {
+                    // Eğer kişi seçili değilse inputu gizle veya soluklaştır (burada gizlemiyoruz, hepsi görünsün)
+                    const score = place.ratings ? (place.ratings[f] || '') : '';
+                    let color = "text-gray-400";
+                    if(score >= 4) color = "text-green-400";
+                    
                     ratingsHTML += `
-                        <div class="flex flex-col items-center">
-                            <span class="text-[10px] text-gray-500 mb-1 uppercase tracking-wider">${friend}</span>
-                            <input type="number" min="1" max="5" placeholder="-" value="${score}" 
-                                class="w-8 h-8 text-center bg-slate-800 rounded-lg border border-slate-700 text-sm font-bold focus:border-blue-500 focus:outline-none ${scoreColor}"
-                                onchange="updateRating(${place.id}, '${friend}', this.value)">
+                        <div class="flex flex-col items-center ${selectedFriends.includes(f) ? '' : 'opacity-30'}">
+                            <span class="text-[10px] text-gray-500 mb-1">${f.charAt(0)}</span>
+                            <input type="number" min="0" max="5" value="${score}" 
+                            class="w-8 h-8 text-center bg-slate-800 rounded border border-slate-700 ${color}"
+                            onchange="window.handleRate('${place.id}', '${f}', this.value)">
                         </div>
                     `;
                 });
 
                 card.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center ${typeColor}">
-                                <i class="fas ${typeIcon}"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-gray-200 leading-tight">${place.name}</h3>
-                                <span class="text-[10px] text-gray-500 uppercase tracking-widest">${place.type}</span>
-                            </div>
+                    <div class="flex justify-between mb-3">
+                        <div>
+                            <h3 class="font-bold text-gray-200">${place.name}</h3>
+                            <span class="text-[10px] text-gray-500 bg-slate-800 px-2 py-1 rounded">${place.type}</span>
                         </div>
-                        <div class="text-right">
-                            <div class="text-xl font-black text-blue-400">${place.currentAvg}<span class="text-xs text-gray-600 font-normal">/5</span></div>
-                        </div>
+                        <div class="text-xl font-bold text-blue-400">${place.avg}</div>
                     </div>
-                    
-                    <div class="bg-slate-900/50 rounded-lg p-2 flex justify-between gap-2 border border-slate-800">
+                    <div class="flex justify-between gap-1 bg-slate-900/50 p-2 rounded">
                         ${ratingsHTML}
                     </div>
-                    
-                    <button onclick="deletePlace(${place.id})" class="absolute top-2 right-2 text-slate-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <button onclick="window.handleDelete('${place.id}')" class="absolute top-2 right-2 text-slate-700 hover:text-red-500 opacity-0 group-hover:opacity-100"><i class="fas fa-trash"></i></button>
                 `;
                 list.appendChild(card);
             });
         }
 
-        // Puan Güncelleme (Limit 5)
-        function updateRating(id, friend, value) {
-            if(value > 5) value = 5; // Max 5 zorlaması
-            if(value < 1 && value !== "") value = 1;
-            
-            const place = places.find(p => p.id === id);
-            if (value === '') {
-                delete place.ratings[friend];
-            } else {
-                place.ratings[friend] = parseInt(value);
-            }
-            saveData();
-            renderPlaces(); // Listeyi tekrar çiz ki renkler güncellensin
-        }
-
-        // Yeni Mekan
-        function toggleAddModal() {
-            const modal = document.getElementById('add-modal');
-            if(modal.classList.contains('hidden')){
-                modal.classList.remove('hidden');
-            } else {
-                modal.classList.add('hidden');
-            }
-        }
-
-        function savePlace() {
-            const name = document.getElementById('new-place-name').value;
-            const type = document.getElementById('new-place-type').value;
-            if (!name) return alert("Mekan ismi boş olamaz");
-
-            const newPlace = {
-                id: Date.now(),
-                name: name,
-                type: type,
-                ratings: {} 
-            };
-            places.push(newPlace);
-            saveData();
-            document.getElementById('new-place-name').value = '';
-            toggleAddModal();
-            renderPlaces();
-        }
-
-        function deletePlace(id) {
-            if(confirm("Silmek istediğine emin misin?")) {
-                places = places.filter(p => p.id !== id);
-                saveData();
-                renderPlaces();
-            }
-        }
-
-        function clearData() {
-            if(confirm("Tüm mekanlar ve puanlar silinecek. Emin misin?")) {
-                localStorage.removeItem('bulusma_app_v2');
-                location.reload();
-            }
-        }
-
-        // Rastgele Seçim
-        function pickRandomPlace() {
-            const resultArea = document.getElementById('result-area');
-            const winnerText = document.getElementById('winner-text');
-            const winnerSub = document.getElementById('winner-subtext');
-            
-            resultArea.classList.remove('hidden');
-            
-            // Seçim havuzu: Ortalaması 2.5 üstü olanlar (5 üzerinden olduğu için)
-            const goodPlaces = places.filter(p => {
-                let total = 0, count = 0;
-                selectedFriends.forEach(f => {
-                    if(p.ratings[f]) { total += p.ratings[f]; count++; }
-                });
-                return count > 0 && (total/count) >= 2.5;
-            });
-            
-            const pool = goodPlaces.length > 0 ? goodPlaces : places;
-            if(pool.length === 0) {
-                winnerText.innerText = "Mekan Yok!";
-                return;
-            }
-
-            let counter = 0;
-            const interval = setInterval(() => {
-                const random = places[Math.floor(Math.random() * places.length)];
-                winnerText.innerText = random.name;
-                winnerSub.innerText = "Aranıyor...";
-                counter++;
-                
-                if(counter > 15) {
-                    clearInterval(interval);
-                    const winner = pool[Math.floor(Math.random() * pool.length)];
-                    winnerText.innerText = winner.name;
-                    winnerSub.innerText = `${selectedTimeSlot} saati için seçildi!`;
-                }
-            }, 80);
-        }
-
-        function saveData() {
-            localStorage.setItem('bulusma_app_v2', JSON.stringify(places));
-        }
+        // Başlangıç
+        window.uiSelectTime(selectedTimeSlot);
+        renderFriendSelector();
     </script>
 </body>
 </html>
